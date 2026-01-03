@@ -23,6 +23,7 @@
       --white: #ffffff;
     }
 
+    /* Color de texto */
     body {
       font-family: 'Roboto', sans-serif;
       background-color: var(--charcoal);
@@ -71,8 +72,7 @@
       background: var(--fire-orange);
     }
 
-    /* Hero */
-    /* Hero */
+    /* Hero (Sección Principal) */
     .hero {
       /* Fondo negro con opacidad + gradiente fuego sobre la imagen */
       background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(215, 38, 30, 0.5)), url('img/fondohero.png');
@@ -202,6 +202,15 @@
       padding: 30px;
       border-top: 2px solid var(--fire-red);
     }
+
+    /* Mejoras para Móvil */
+    @media (max-width: 768px) {
+
+      .carousel-control-prev,
+      .carousel-control-next {
+        display: none;
+      }
+    }
   </style>
 </head>
 
@@ -232,40 +241,56 @@
 
   <!-- Hero -->
   <section id="inicio" class="hero">
-    <div class="container">
-      <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="6000">
-        <div class="carousel-inner">
-          <!-- Slide 1 -->
-          <div class="carousel-item active">
+
+    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="6000">
+      <div class="carousel-inner">
+        <!-- Carrusel 1 -->
+        <div class="carousel-item active">
+          <div class="container">
             <h1 class="display-4 fw-bold">El fuego que une a los buenos asados</h1>
             <p class="lead mb-4">Parrillas diseñadas con pasión, fuerza y tradición chilena.</p>
           </div>
-          <!-- Slide 2 -->
-          <div class="carousel-item">
+        </div>
+        <!-- Carrusel 2 -->
+        <div class="carousel-item">
+          <div class="container">
             <h1 class="display-4 fw-bold">¿Sabías que?</h1>
             <p class="lead mb-4">El secreto de un buen asado no es solo la carne, es la paciencia y la compañía.</p>
           </div>
-          <!-- Slide 3 -->
-          <div class="carousel-item">
+        </div>
+        <!-- Carrusel 3 -->
+        <div class="carousel-item">
+          <div class="container">
             <h1 class="display-4 fw-bold">Tips de Maestro</h1>
             <p class="lead mb-4">Nunca pinches la carne al darla vuelta, usa tenazas para mantener sus jugos.</p>
           </div>
-          <!-- Slide 4 -->
-          <div class="carousel-item">
+        </div>
+        <!-- Carrusel 4 -->
+        <div class="carousel-item">
+          <div class="container">
             <h1 class="display-4 fw-bold">Tradición y Calidad</h1>
             <p class="lead mb-4">Nuestras parrillas están hechas para durar generaciones, igual que tus historias.</p>
           </div>
         </div>
       </div>
-
-      <div class="mt-4">
-        <a href="#parrillas" class="btn btn-light me-2">Ver Parrillas</a>
-        <a href="#contacto" class="btn btn-outline-light">Contáctanos</a>
-      </div>
-      <div class="mt-4">
-        <i class="bi bi-flame" style="font-size:3rem;color:var(--fire-yellow);"></i>
-      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Anterior</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Siguiente</span>
+      </button>
     </div>
+
+    <div class="container mt-4">
+      <a href="#parrillas" class="btn btn-light me-2">Ver Parrillas</a>
+      <a href="#contacto" class="btn btn-outline-light">Contáctanos</a>
+    </div>
+    <div class="mt-4">
+      <i class="bi bi-flame" style="font-size:3rem;color:var(--fire-yellow);"></i>
+    </div>
+
   </section>
 
   <!-- Productos Destacados -->
@@ -352,7 +377,6 @@
 
         </div>
       </div>
-    </div>
   </section>
 
   <!-- CTA con Carrusel de Redes Sociales -->
@@ -360,51 +384,62 @@
     <div id="ctaCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="6000">
       <div class="carousel-inner">
 
-        <!-- Slide 1: WhatsApp -->
+        <!-- Carrusel 1: WhatsApp -->
         <div class="carousel-item active">
-          <h2>¿Listo para llevar tu asado al siguiente nivel?</h2>
-          <p class="lead text-light mb-4">Cotiza esa parrilla soñada o resuelve tus dudas directamente con nuestro
-            equipo.</p>
-          <a href="https://wa.me/56984093394" target="_blank" class="btn btn-custom-cta mt-3">
-            <i class="bi bi-whatsapp"></i> Escríbenos por WhatsApp
-          </a>
+          <div class="container">
+            <h2>¿Listo para llevar tu asado al siguiente nivel?</h2>
+            <p class="lead text-light mb-4">Cotiza esa parrilla soñada o resuelve tus dudas directamente con nuestro
+              equipo.</p>
+            <a href="https://wa.me/56984093394" target="_blank" class="btn btn-custom-cta mt-3">
+              <i class="bi bi-whatsapp"></i> Escríbenos por WhatsApp
+            </a>
+          </div>
         </div>
 
-        <!-- Slide 2: Facebook -->
+        <!-- Carrusel 2: Facebook -->
         <div class="carousel-item">
-          <h2>Síguenos en Facebook</h2>
-          <p class="lead text-light mb-4">Únete a nuestra comunidad, comparte tus asados y no te pierdas nuestras
-            novedades.</p>
-          <a href="https://www.facebook.com/share/1C2gVS542e/?mibextid=wwXIfr" target="_blank"
-            class="btn btn-custom-cta mt-3">
-            <i class="bi bi-facebook"></i> Seguir en Facebook
-          </a>
+          <div class="container">
+            <h2>Síguenos en Facebook</h2>
+            <p class="lead text-light mb-4">Únete a nuestra comunidad, comparte tus asados y no te pierdas nuestras
+              novedades.</p>
+            <a href="https://www.facebook.com/share/1C2gVS542e/?mibextid=wwXIfr" target="_blank"
+              class="btn btn-custom-cta mt-3">
+              <i class="bi bi-facebook"></i> Seguir en Facebook
+            </a>
+          </div>
         </div>
 
-        <!-- Slide 3: Instagram -->
+        <!-- Carrusel 3: Instagram -->
         <div class="carousel-item">
-          <h2>Mira nuestros trabajos en Instagram</h2>
-          <p class="lead text-light mb-4">Descubre fotos exclusivas de nuestros modelos, clientes felices y procesos de
-            fabricación.</p>
-          <a href="https://www.instagram.com/parrillas_del_gancho?igsh=ZzQxNGdiMnVjZnk4" target="_blank"
-            class="btn btn-custom-cta mt-3">
-            <i class="bi bi-instagram"></i> Seguir en Instagram
-          </a>
+          <div class="container">
+            <h2>Mira nuestros trabajos en Instagram</h2>
+            <p class="lead text-light mb-4">Descubre fotos exclusivas de nuestros modelos, clientes felices y procesos
+              de
+              fabricación.</p>
+            <a href="https://www.instagram.com/parrillas_del_gancho?igsh=ZzQxNGdiMnVjZnk4" target="_blank"
+              class="btn btn-custom-cta mt-3">
+              <i class="bi bi-instagram"></i> Seguir en Instagram
+            </a>
+          </div>
         </div>
 
-        <!-- Slide 4: tiktok -->
+        <!-- Carrusel 4: tiktok -->
         <div class="carousel-item">
-          <h2>Se parte de nuestro Tiktok</h2>
-          <p class="lead text-light mb-4">Podrás ver videos sobre nuestro trabajo y participacion en diferentes tipos de
-            eventos.</p>
-          <a href="https://www.tiktok.com/@parrillasdelgancho" target="_blank" class="btn btn-custom-cta mt-3">
-            <i class="bi bi-tiktok"></i> Seguir en Tiktok
-          </a>
+          <div class="container">
+            <h2>Se parte de nuestro Tiktok</h2>
+            <p class="lead text-light mb-4">Podrás ver videos sobre nuestro trabajo y participacion en diferentes
+              tipos
+              de
+              eventos.</p>
+            <a href="https://www.tiktok.com/@parrillasdelgancho" target="_blank" class="btn btn-custom-cta mt-3">
+              <i class="bi bi-tiktok"></i> Seguir en Tiktok
+            </a>
+          </div>
         </div>
 
       </div>
 
-      <!-- Controls (Visible on Desktop) -->
+      <!-- Controles (Visible en Escritorio) -->
       <button class="carousel-control-prev d-none d-md-flex" type="button" data-bs-target="#ctaCarousel"
         data-bs-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -435,15 +470,18 @@
               <input type="email" class="form-control" id="email" placeholder="tu@correo.com">
             </div>
             <div class="mb-3">
-              <label for="mensaje" class="form-label">Mensaje</label>
-              <textarea class="form-control" id="mensaje" rows="3" placeholder="Escribe tu mensaje aquí..."></textarea>
+              <label for="mensaje" class="form-label">Mensaje <small class="text-white-50 ms-2"></small></label>
+              <textarea class="form-control" id="mensaje" rows="4" maxlength="300" style="resize: none;"
+                placeholder="Escribe tu mensaje aquí..."></textarea>
+              <div class="text-end text-white-50" style="font-size: 0.8rem;"><span id="charCount">0</span>/300</div>
             </div>
             <button type="submit" class="btn btn-warning w-100" id="btnEnviar">Enviar</button>
             <p id="formStatus" class="mt-2 text-white text-center" style="display:none;"></p>
           </form>
 
           <div class="mt-4 pt-3 border-top border-secondary text-center">
-            <h5 class="mb-3 text-white" style="font-family: 'Oswald', sans-serif;">¿Prefieres una respuesta más rápida?
+            <h5 class="mb-3 text-white" style="font-family: 'Oswald', sans-serif;">¿Prefieres una respuesta más
+              rápida?
             </h5>
             <a href="https://wa.me/56984093394" target="_blank" class="btn btn-outline-warning w-100 fw-bold">
               <i class="bi bi-whatsapp"></i> Contactar por WhatsApp
@@ -495,7 +533,7 @@
   </div>
 
   <script>
-    // --- Dynamic Product Loading ---
+    // --- Carga Dinámica de Productos ---
     const API_PRODUCTS_URL = 'http://localhost:3000/api/products';
 
     document.addEventListener('DOMContentLoaded', loadProducts);
@@ -517,13 +555,13 @@
           const cardHtml = createProductCard(p);
 
           if (p.type === 'parrilla') {
-            // Logic for "See More" (show first 6, hide others)
+            // Lógica para "Ver Más" (mostrar primeros 6, ocultar otros)
             const extraClass = parrillaCount >= 6 ? 'extra-parrilla' : '';
             const displayStyle = parrillaCount >= 6 ? 'style="display:none;"' : '';
 
             const wrapper = document.createElement('div');
             wrapper.className = `col-md-4 ${extraClass}`;
-            if (parrillaCount >= 6) wrapper.style.display = 'none'; // Ensure inline style is applied
+            if (parrillaCount >= 6) wrapper.style.display = 'none'; // Asegurar que el estilo inline se aplique
             wrapper.innerHTML = cardHtml;
             parrillasContainer.appendChild(wrapper);
             parrillaCount++;
@@ -535,14 +573,14 @@
           }
         });
 
-        // Handle "View More" button visibility
+        // Manejar visibilidad del botón "Ver Más"
         const viewMoreControls = document.getElementById('viewMoreControls');
         if (parrillaCount > 6) {
           viewMoreControls.style.display = 'block';
           setupViewMoreLogic();
         }
 
-        // Re-init Lightbox for new images
+        // Re-inicializar Lightbox para nuevas imágenes
         initLightbox();
 
       } catch (e) {
@@ -567,7 +605,7 @@
                 <p class="card-text text-light">${p.description}</p>
               </div>
               <div class="mt-auto pt-3 text-center">
-                <a href="${whatsappLink}" target="_blank" class="btn btn-warning btn-sm px-5 fw-bold" onclick="trackEvent('click_quote', '${p.name}')">Cotizar</a>
+                <a href="${whatsappLink}" target="_blank" class="btn btn-warning btn-sm px-5 fw-bold">Cotizar</a>
               </div>
             </div>
           </div>
@@ -615,15 +653,17 @@
     }
   </script>
   <script>
-    // --- Analytics Tracking ---
+    // --- Rastreo de Analíticas ---
     const API_TRACK_URL = 'http://localhost:3000/api/track';
 
     function trackEvent(type, productName = null) {
       console.log('Tracking event:', type, productName);
+      // keepalive: true asegura que la petición se envíe aunque se cierre/cambie la página
       fetch(API_TRACK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, productName })
+        body: JSON.stringify({ type, productName }),
+        keepalive: true
       }).catch(err => console.warn('Tracking server not reachable', err));
     }
 
@@ -632,27 +672,18 @@
       trackEvent('visit');
     });
 
-    // 2. Cotizaciones (Clics en WhatsApp)
-    document.querySelectorAll('a[href*="wa.me"]').forEach(link => {
-      link.addEventListener('click', () => {
-        let productName = null;
-        // Intentar extraer nombre del producto entre asteriscos en la URL
-        // Ejemplo: ...Vi%20el%20*Fogoneros%20Pellet*%20en...
-        try {
-          const url = decodeURIComponent(link.href);
-          const match = url.match(/\*(.*?)\*/);
-          if (match && match[1]) {
-            productName = match[1];
-          }
-        } catch (e) { console.warn('Error parsing product name', e); }
 
-        trackEvent('quote', productName);
-      });
-    });
 
     // 3. Contacto por Formulario (Correo)
     const contactForm = document.getElementById('contactForm');
     if (contactForm) {
+      // Lógica de Conteo de Caracteres
+      const msgInput = document.getElementById('mensaje');
+      const charCount = document.getElementById('charCount');
+      msgInput.addEventListener('input', function () {
+        charCount.innerText = this.value.length;
+      });
+
       contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -698,6 +729,33 @@
         }
       });
     }
+
+    // 2. Cotizaciones (Delegación de eventos)
+    // Escuchar clicks en cualquier parte del documento
+    document.addEventListener('click', function (e) {
+      // Buscar si el click fue en (o dentro de) un enlace de WhatsApp
+      const link = e.target.closest('a[href*="wa.me"]');
+
+      if (link) {
+        let productName = 'General'; // Valor por defecto
+
+        // Intentar extraer nombre del producto de la URL si existe el patrón *Nombre*
+        try {
+          const url = decodeURIComponent(link.href);
+          const match = url.match(/\*(.*?)\*/);
+          if (match && match[1]) {
+            productName = match[1];
+          }
+        } catch (err) {
+          console.warn('Error parsing product name', err);
+        }
+
+        // Si el enlace tiene un atributo data-product explícito, usarlo (opcional, por si quieres forzar nombres)
+        // if (link.dataset.product) productName = link.dataset.product;
+
+        trackEvent('quote', productName);
+      }
+    });
 
     // 4. Redes Sociales
     const socialDomains = ['facebook.com', 'instagram.com', 'tiktok.com'];

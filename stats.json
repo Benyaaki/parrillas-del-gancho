@@ -1,13 +1,18 @@
 {
-  "visits": 28,
-  "quotes": 8,
-  "contact_attempts": 11,
+  "visits": 39,
+  "quotes": 23,
+  "contact_attempts": 13,
   "social_clicks": 3,
   "products": {
-    "Fogoneros Pellet": 3,
+    "Fogoneros Pellet": 5,
     "Parrilla Compacta Spiedo": 1,
-    "Fogonero Vertical Premium": 1,
-    "Parrilla Doble Elevación": 2
+    "Fogonero Vertical Premium": 3,
+    "Parrilla Doble Elevación": 2,
+    "Carbón Espino Premium": 1,
+    "Fogonero Jaula Master": 4,
+    "Fogonero Disco Pro": 1,
+    "Fogonero Circular Asador": 4,
+    "Parrilla Mixta Plancha": 1
   },
   "sales": [
     {
@@ -37,24 +42,36 @@
       "product": "[PARRILLAS] Parrilla Mixta Plancha",
       "amount": "180000",
       "createdAt": "2026-01-03T17:06:51.642Z"
+    },
+    {
+      "id": "1767471581214",
+      "date": "2026-01-04",
+      "product": "[PARRILLAS] Fogonero Vertical Premium",
+      "amount": "130000",
+      "createdAt": "2026-01-03T20:19:41.214Z"
     }
   ],
   "history": {
     "2026-01-03": {
-      "visits": 21,
-      "quotes": 8,
-      "contact_attempts": 6,
+      "visits": 32,
+      "quotes": 23,
+      "contact_attempts": 8,
       "social_clicks": 1,
       "products": {
-        "Fogoneros Pellet": 3,
+        "Fogoneros Pellet": 5,
         "Parrilla Compacta Spiedo": 1,
-        "Fogonero Vertical Premium": 1,
-        "Parrilla Doble Elevación": 2
+        "Fogonero Vertical Premium": 3,
+        "Parrilla Doble Elevación": 2,
+        "Carbón Espino Premium": 1,
+        "Fogonero Jaula Master": 4,
+        "Fogonero Disco Pro": 1,
+        "Fogonero Circular Asador": 4,
+        "Parrilla Mixta Plancha": 1
       }
     }
   },
   "email_usage": {
     "date": "2026-01-03",
-    "count": 6
+    "count": 8
   }
 }

@@ -177,6 +177,11 @@ app.post('/api/send-email', async (req, res) => {
         return res.status(500).json({ success: false, message: 'Server email not configured.' });
     }
 
+    if (mensaje && mensaje.length > 300) {
+        return res.status(400).json({ success: false, message: 'El mensaje no puede exceder los 300 caracteres.' });
+    }
+
+
     // --- Rate Limiting Logic ---
     const stats = getStats();
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -199,22 +204,107 @@ app.post('/api/send-email', async (req, res) => {
         });
 
 
-        // HTML Template
+        // Plantilla HTML
         const htmlContent = `
             <!DOCTYPE html>
             <html lang="es">
             <head>
                 <meta charset="UTF-8">
                 <style>
-                    body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #121212; margin: 0; padding: 0; color: #ffffff; }
-                    .container { width: 100%; max-width: 600px; margin: 0 auto; background-color: #1e1e1e; border: 1px solid #333; }
-                    .header { background-color: #000000; padding: 30px; text-align: center; border-bottom: 2px solid #e67e22; }
-                    .header img { max-width: 180px; height: auto; }
-                    .content { padding: 40px 30px; text-align: left; }
-                    .title { color: #e67e22; font-size: 24px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
-                    .field-label { color: #aaaaaa; font-size: 14px; text-transform: uppercase; font-weight: bold; margin-top: 15px; display: block; }
-                    .field-value { color: #ffffff; font-size: 16px; margin-bottom: 15px; border-left: 3px solid #e67e22; padding-left: 10px; }
-                    .message-box { background-color: #252525; padding: 20px; border-radius: 5px; border: 1px solid #333; margin-top: 10px; font-style: italic; color: #dddddd; }
+                    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap');
+                    
+                    body { 
+                        font-family: 'Roboto', Helvetica, Arial, sans-serif; 
+                        background-color: #121212; 
+                        margin: 0; 
+                        padding: 0; 
+                        color: #ffffff; 
+                    }
+                    .container { 
+                        width: 100%; 
+                        max-width: 600px; 
+                        margin: 0 auto; 
+                        background-color: #1e1e1e; 
+                        border: 1px solid #333; 
+                    }
+                    .header { 
+                        background-color: #000000; 
+                        padding: 50px 20px; 
+                        text-align: center; 
+                        border-bottom: 3px solid #d7261e; 
+                    }
+                    .header img { 
+                        max-width: 100px; /* Logo más pequeño */
+                        height: auto; 
+                    }
+                    .content { 
+                        padding: 60px 40px; /* Mayor espaciado */
+                        text-align: left; 
+                    }
+                    .title { 
+                        color: #f46b1b; 
+                        font-family: 'Oswald', sans-serif;
+                        font-size: 26px; 
+                        font-weight: 700; 
+                        margin-bottom: 30px; 
+                        text-transform: uppercase; 
+                        letter-spacing: 1px;
+                        text-align: center;
+                    }
+                    .intro-text {
+                        color: #cccccc;
+                        font-size: 15px;
+                        line-height: 1.6;
+                        margin-bottom: 40px;
+                        text-align: center;
+                    }
+                    .field-label { 
+                        color: #888888; 
+                        font-size: 12px; 
+                        text-transform: uppercase; 
+                        font-weight: bold; 
+                        margin-top: 25px; 
+                        display: block; 
+                        letter-spacing: 1.5px;
+                    }
+                    .field-value { 
+                        color: #ffffff; 
+                        font-size: 18px; 
+                        margin-bottom: 15px; 
+                        border-left: 2px solid #d7261e; 
+                        padding-left: 15px; 
+                        font-weight: 500;
+                    }
+                    .message-box { 
+                        background-color: #252525; 
+                        padding: 25px; 
+                        border-radius: 8px; 
+                        border: 1px solid #333; 
+                        margin-top: 15px; 
+                        font-style: italic; 
+                        color: #dddddd; 
+                        line-height: 1.6;
+                    }
+                    /* Estilos Footer */
+                    .footer-title {
+                        font-family: 'Oswald', sans-serif;
+                        font-size: 32px; /* Más grande */
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        margin: 0;
+                        text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+                        letter-spacing: 2px;
+                        color: #ffffff;
+                    }
+                    .footer-subtitle {
+                        font-family: 'Roboto', sans-serif;
+                        font-size: 14px;
+                        text-transform: uppercase;
+                        opacity: 0.9;
+                        margin-top: 10px;
+                        letter-spacing: 4px;
+                        color: #ffc300;
+                    }
                 </style>
             </head>
             <body>
@@ -225,7 +315,7 @@ app.post('/api/send-email', async (req, res) => {
                     
                     <div class="content">
                         <div class="title">Nuevo Mensaje Recibido</div>
-                        <p style="color: #ccc; margin-bottom: 30px;">Has recibido una nueva solicitud de contacto desde tu sitio web.</p>
+                        <p class="intro-text">Has recibido una nueva solicitud de contacto desde tu sitio web.</p>
                         
                         <span class="field-label">Nombre del Cliente</span>
                         <div class="field-value">${nombre}</div>
@@ -239,7 +329,7 @@ app.post('/api/send-email', async (req, res) => {
                         </div>
                     </div>
 
-                    <!-- Footer using Table for better background support -->
+                    <!-- Footer -->
                     <table width="100%" border="0" cellspacing="0" cellpadding="0">
                         <tr>
                             <td align="center" valign="middle" background="cid:footer_bg" style="
@@ -247,15 +337,15 @@ app.post('/api/send-email', async (req, res) => {
                                 background-size: cover;
                                 background-position: center;
                                 background-repeat: no-repeat;
-                                padding: 60px 20px;
+                                padding: 80px 20px;
                                 color: #ffffff;
                             ">
                                 <!-- Fallback background color if image fails -->
                                 <div style="position: relative; z-index: 2;">
-                                    <p style="margin: 5px 0; font-size: 14px; font-weight: bold; text-shadow: 2px 2px 4px #000000;">
+                                    <p class="footer-title">
                                         Parrillas del Gancho
                                     </p>
-                                    <p style="margin: 5px 0; font-size: 12px; opacity: 0.9; text-shadow: 1px 1px 3px #000000;">
+                                    <p class="footer-subtitle">
                                         Administración Web
                                     </p>
                                 </div>
