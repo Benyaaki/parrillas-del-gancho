@@ -1,0 +1,116 @@
+[
+  {
+    "id": "1",
+    "name": "Fogoneros Pellet",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Fogones verticales de alta eficiencia térmica a base de pellets. Estilo industrial.",
+    "badge": "Nuevo",
+    "image": "img/parilla7.jpg"
+  },
+  {
+    "id": "2",
+    "name": "Parrilla Compacta Spiedo",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Incluye motor eléctrico y espiedo. Solución completa en espacio reducido.",
+    "badge": "Más vendido",
+    "image": "img/parrilla4.jpg"
+  },
+  {
+    "id": "3",
+    "name": "Fogonero Vertical Premium",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Estructura tipo jaula con cadenas y parrilla media luna. Ideal para cocción lenta.",
+    "image": "img/parrilla1.jpg"
+  },
+  {
+    "id": "4",
+    "name": "Parrilla Doble Elevación",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Sistema frontal de doble manivela independiente. Máximo control.",
+    "image": "img/parrilla2.jpg"
+  },
+  {
+    "id": "5",
+    "name": "Fogonero Geométrico",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Diseño moderno minimalista. Ideal para terrazas y encendido rápido.",
+    "image": "img/parrilla3.jpg"
+  },
+  {
+    "id": "6",
+    "name": "Fogonero Jaula Master",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Gran formato con estructura completa para colgar cortes enteros.",
+    "image": "img/parrilla5.jpg"
+  },
+  {
+    "id": "7",
+    "name": "Parrilla Mixta Plancha",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Combina parrilla en V y plancha de acero. Versatilidad total.",
+    "image": "img/parrilla6.jpg"
+  },
+  {
+    "id": "8",
+    "name": "Fogonero Disco Pro",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Incluye disco de acero y tapa abatible. Base de ladrillo.",
+    "image": "img/parrilla8.jpg"
+  },
+  {
+    "id": "9",
+    "name": "Fogonero Circular Asador",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Modelo bajo con cruz central y parrillas laterales de media luna.",
+    "image": "img/parrilla9.jpg"
+  },
+  {
+    "id": "10",
+    "name": "Parrilla Doble Nivel",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Parrilla principal más rejilla superior de mantenimiento.",
+    "image": "img/parrilla10.jpg"
+  },
+  {
+    "id": "11",
+    "name": "Insert Quincho Doble",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Sistema de elevación doble listo para empotrar en obra.",
+    "image": "img/parrilla11.jpg"
+  },
+  {
+    "id": "12",
+    "name": "Asador Cruz Pampa",
+    "type": "parrilla",
+    "price": "Consultar",
+    "description": "Bandeja amplia para brasas y doble cruz asadora. Para expertos.",
+    "image": "img/parrilla12.jpg"
+  },
+  {
+    "id": "13",
+    "name": "Carbón Espino Premium",
+    "type": "articulo",
+    "price": "Consultar",
+    "description": "Saco de 2.5kg. Carbón de alta duración y poder calórico.",
+    "image": "img/carbon.jpg"
+  },
+  {
+    "id": "14",
+    "name": "Spiedo Eléctrico Universal",
+    "type": "articulo",
+    "price": "Consultar",
+    "description": "Adaptable a cualquier parrilla. Acero inoxidable y motor silencioso.",
+    "image": "img/spiedo.png"
+  }
+]

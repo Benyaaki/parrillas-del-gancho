@@ -1,0 +1,60 @@
+{
+  "visits": 28,
+  "quotes": 8,
+  "contact_attempts": 11,
+  "social_clicks": 3,
+  "products": {
+    "Fogoneros Pellet": 3,
+    "Parrilla Compacta Spiedo": 1,
+    "Fogonero Vertical Premium": 1,
+    "Parrilla Doble Elevación": 2
+  },
+  "sales": [
+    {
+      "id": "1767459990813",
+      "date": "2026-01-03",
+      "product": "[PARRILLAS] Fogoneros Pellet",
+      "amount": "150000",
+      "createdAt": "2026-01-03T17:06:30.813Z"
+    },
+    {
+      "id": "1767459996852",
+      "date": "2026-01-03",
+      "product": "[PARRILLAS] Parrilla Compacta Spiedo",
+      "amount": "120000",
+      "createdAt": "2026-01-03T17:06:36.852Z"
+    },
+    {
+      "id": "1767460005336",
+      "date": "2026-01-03",
+      "product": "[PARRILLAS] Parrilla Doble Elevación",
+      "amount": "80000",
+      "createdAt": "2026-01-03T17:06:45.336Z"
+    },
+    {
+      "id": "1767460011642",
+      "date": "2026-01-03",
+      "product": "[PARRILLAS] Parrilla Mixta Plancha",
+      "amount": "180000",
+      "createdAt": "2026-01-03T17:06:51.642Z"
+    }
+  ],
+  "history": {
+    "2026-01-03": {
+      "visits": 21,
+      "quotes": 8,
+      "contact_attempts": 6,
+      "social_clicks": 1,
+      "products": {
+        "Fogoneros Pellet": 3,
+        "Parrilla Compacta Spiedo": 1,
+        "Fogonero Vertical Premium": 1,
+        "Parrilla Doble Elevación": 2
+      }
+    }
+  },
+  "email_usage": {
+    "date": "2026-01-03",
+    "count": 6
+  }
+}

@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Parrillas del Gancho</title>
+    <link rel="icon" type="image/png" href="img/logo.png">
+
+    <!-- CSS Dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --fire-red: #d7261e;
+            --fire-orange: #f46b1b;
+            --fire-yellow: #ffc300;
+            --charcoal: #1b1b1b;
+            --dark-card: #2a2a2a;
+            --dark-sidebar: #121212;
+            --text-muted: #aaaaaa;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--charcoal);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* LAYOUT: Sidebar + Content */
+        .wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            min-width: 250px;
+            max-width: 250px;
+            background: var(--dark-sidebar);
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .brand-text {
+            color: var(--fire-orange);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .sidebar ul li a {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: block;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            transition: 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar ul li a:hover,
+        .sidebar ul li a.active {
+            background: #1f1f1f;
+            color: #fff;
+            border-left-color: var(--fire-yellow);
+        }
+
+        .sidebar ul li a i {
+            margin-right: 10px;
+        }
+
+        /* Content */
+        .content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        /* Cards */
+        .stat-card {
+            background: var(--dark-card);
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            height: 100%;
+        }
+
+        .stat-info h5 {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-info h2 {
+            margin: 0;
+            font-size: 2.2rem;
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+
+        .icon-box.orange {
+            color: var(--fire-orange);
+            background: rgba(244, 107, 27, 0.1);
+        }
+
+        .icon-box.green {
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+        }
+
+        .icon-box.blue {
+            color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .icon-box.purple {
+            color: #9b59b6;
+            background: rgba(155, 89, 182, 0.1);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: var(--dark-card);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Login Screen Overrides */
+        #loginSection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--charcoal);
+            z-index: 9999;
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Login Section -->
+    <div class="d-flex flex-column align-items-center justify-content-center min-vh-100" id="loginSection">
+        <div class="card p-5 bg-dark border-secondary shadow-lg" style="max-width: 400px; width: 100%;">
+            <div class="text-center mb-4">
+                <h2 class="text-warning">Dashboard Access</h2>
+                <p class="text-muted">Panel Administrativo</p>
+            </div>
+            <form id="loginForm">
+                <input type="password" id="adminPass" class="form-control mb-3 text-center" placeholder="••••••"
+                    required>
+                <button type="submit" class="btn btn-warning fw-bold w-100">INGRESAR</button>
+            </form>
+            <p id="loginError" class="text-danger mt-3 text-center fw-bold" style="display:none;">
+                <i class="bi bi-exclamation-triangle-fill"></i> Contraseña incorrecta
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard (Hidden by default) -->
+    <div class="wrapper" id="dashboardSection" style="display: none;">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <span class="brand-text">PARRILLAS ADMIN</span>
+            </div>
+            <ul>
+                <li><a href="#" onclick="showSection('resumen')" id="nav-resumen" class="active"><i
+                            class="bi bi-speedometer2"></i> Resumen</a></li>
+                <li><a href="#" onclick="showSection('admin')" id="nav-admin"><i class="bi bi-cash-coin"></i>
+                        Administración</a></li>
+                <li><a href="#" onclick="showSection('productos-admin')" id="nav-productos-admin"><i
+                            class="bi bi-box-seam"></i> Productos</a></li>
+                <li><a href="#" onclick="showSection('ajustes')" id="nav-ajustes"><i class="bi bi-gear"></i> Ajustes</a>
+                </li>
+                <li><a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Salir</a></li>
+            </ul>
+        </nav>
+
+        <!-- Content -->
+        <div class="content">
+
+            <!-- Section: Resumen -->
+            <div id="section-resumen">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Resumen General</h3>
+                    <div class="d-flex gap-2">
+                        <select id="dateFilter" class="form-select form-select-sm bg-dark text-white border-secondary"
+                            style="width: auto;" onchange="applyDateFilter()">
+                            <option value="all">Historico (Todo)</option>
+                            <option value="today">Hoy</option>
+                            <option value="week">Últimos 7 Días</option>
+                            <option value="month">Este Mes</option>
+                        </select>
+                        <button onclick="loadStats()" class="btn btn-outline-warning btn-sm"><i
+                                class="bi bi-arrow-clockwise"></i> Actualizar</button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="row g-4 mb-4" id="kpi-container">
+                    <div class="col-md-3" id="card-visits">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h5>Visitas Totales</h5>
+                                <h2 id="val-visits">0</h2>
+                            </div>
+                            <div class="icon-box orange"><i class="bi bi-eye"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="card-quotes">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h5>Cotizaciones</h5>
+                                <h2 id="val-quotes">0</h2>
+                            </div>
+                            <div class="icon-box green"><i class="bi bi-whatsapp"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="card-conversion">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h5>Tasa de Conversión</h5>
+                                <h2 id="val-conversion">0%</h2>
+                            </div>
+                            <div class="icon-box blue"><i class="bi bi-graph-up-arrow"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="card-forms">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h5>Leads (Email)</h5>
+                                <h2 id="val-forms">0</h2>
+                            </div>
+                            <div class="icon-box purple"><i class="bi bi-envelope"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row" id="charts-container">
+                    <!-- Main Chart: Products -->
+                    <div class="col-md-8" id="chart-product-container">
+                        <div class="chart-container">
+                            <h4 class="mb-3" style="font-size: 1.2rem; color: var(--text-muted);">Productos Más
+                                Cotizados
+                            </h4>
+                            <canvas id="productsChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Secondary Chart: Traffic Mix -->
+                    <div class="col-md-4" id="chart-traffic-container">
+                        <div class="chart-container">
+                            <h4 class="mb-3" style="font-size: 1.2rem; color: var(--text-muted);">Distribución de
+                                Interacción</h4>
+                            <canvas id="trafficChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Section: Administración (Ventas) -->
+            <!-- Section: Administración (Ventas) -->
+            <div id="section-admin" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Registro de Ventas (Manual) & Analítica</h3>
+                    <div class="card bg-success text-white border-0 shadow-sm px-4 py-2">
+                        <small>INGRESOS TOTALES</small>
+                        <h4 class="m-0 fw-bold" id="totalRevenueDisplay">$0</h4>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Formulario -->
+                    <div class="col-md-4">
+                        <div class="card bg-dark border-secondary p-4 mb-4 shadow-sm">
+                            <h5 class="text-warning mb-4"><i class="bi bi-plus-circle"></i> Registrar Nueva Venta</h5>
+                            <form id="salesForm">
+                                <!-- Date -->
+                                <div class="mb-3">
+                                    <label class="form-label text-white-50 small">FECHA DE VENTA</label>
+                                    <input type="date" id="saleDate"
+                                        class="form-control bg-dark text-white border-secondary" required>
+                                </div>
+
+                                <!-- Category Selection -->
+                                <div class="mb-3">
+                                    <label class="form-label text-white-50 small">CATEGORÍA</label>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="category"
+                                                id="catParrillas" value="parrillas" checked
+                                                onchange="updateProductOptions()">
+                                            <label class="form-check-label text-white"
+                                                for="catParrillas">Parrillas</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="category"
+                                                id="catArticulos" value="articulos" onchange="updateProductOptions()">
+                                            <label class="form-check-label text-white"
+                                                for="catArticulos">Artículos</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="category" id="catOtros"
+                                                value="otros" onchange="updateProductOptions()">
+                                            <label class="form-check-label text-white" for="catOtros">Otros</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Product Dropdown -->
+                                <div class="mb-3" id="productSelectContainer">
+                                    <label class="form-label text-white-50 small">PRODUCTO</label>
+                                    <select id="saleProduct" class="form-select bg-dark text-white border-secondary">
+                                        <!-- Populated by JS -->
+                                    </select>
+                                </div>
+
+                                <!-- Custom Product Input (Hidden by default) -->
+                                <div class="mb-3" id="customProductContainer" style="display: none;">
+                                    <label class="form-label text-white-50 small">NOMBRE DEL PRODUCTO / SERVICIO</label>
+                                    <input type="text" id="customProduct"
+                                        class="form-control bg-dark text-white border-secondary"
+                                        placeholder="Especifique...">
+                                </div>
+
+                                <!-- Amount -->
+                                <div class="mb-3">
+                                    <label class="form-label text-white-50 small">MONTO TOTAL ($)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-secondary text-white border-secondary">$</span>
+                                        <input type="number" id="saleAmount"
+                                            class="form-control bg-dark text-white border-secondary"
+                                            placeholder="Ej: 150000" required>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-warning w-100 fw-bold mt-2">GUARDAR VENTA</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico y Tabla -->
+                    <div class="col-md-8">
+
+                        <!-- Sales Chart -->
+                        <div class="card bg-dark border-secondary p-3 mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="text-white m-0"><i class="bi bi-graph-up-arrow text-success"></i> Crecimiento
+                                    de Ventas</h5>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <input type="radio" class="btn-check" name="chartFilter" id="filterDay"
+                                        autocomplete="off" onclick="changeChartFilter('day')">
+                                    <label class="btn btn-outline-secondary text-white" for="filterDay">Día</label>
+
+                                    <input type="radio" class="btn-check" name="chartFilter" id="filterMonth"
+                                        autocomplete="off" checked onclick="changeChartFilter('month')">
+                                    <label class="btn btn-outline-secondary text-white" for="filterMonth">Mes</label>
+
+                                    <input type="radio" class="btn-check" name="chartFilter" id="filterYear"
+                                        autocomplete="off" onclick="changeChartFilter('year')">
+                                    <label class="btn btn-outline-secondary text-white" for="filterYear">Año</label>
+                                </div>
+                            </div>
+                            <div style="height: 250px;">
+                                <canvas id="salesGrowthChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="card bg-dark border-secondary p-3">
+                            <h5 class="text-white mb-3">Historial de Ventas Recientes</h5>
+                            <div class="table-responsive" style="max-height: 300px;">
+                                <table class="table table-dark table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Producto</th>
+                                            <th>Monto</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="salesTableBody">
+                                        <!-- Rows generated by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Productos (New) -->
+            <div id="section-productos-admin" style="display: none;">
+                <h3 class="mb-4"><i class="bi bi-box-seam me-2"></i> Administrar Productos</h3>
+
+                <div class="row">
+                    <!-- Formulario Agregar Producto -->
+                    <div class="col-md-4">
+                        <div class="card bg-dark text-white border-secondary shadow-sm mb-4">
+                            <div class="card-header border-secondary">
+                                <h5 class="mb-0" id="formTitle"><i class="bi bi-plus-circle me-2"></i> Nuevo Producto
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="productForm">
+                                    <div class="mb-3">
+                                        <label for="prodName" class="form-label text-white-50 small">NOMBRE</label>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary"
+                                            id="prodName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="prodType" class="form-label text-white-50 small">TIPO</label>
+                                        <select class="form-select bg-dark text-white border-secondary" id="prodType">
+                                            <option value="parrilla">Parrilla</option>
+                                            <option value="articulo">Artículo</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="prodPrice" class="form-label text-white-50 small">PRECIO
+                                            (Texto)</label>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary"
+                                            id="prodPrice" value="Consultar" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="prodDesc" class="form-label text-white-50 small">DESCRIPCIÓN</label>
+                                        <textarea class="form-control bg-dark text-white border-secondary" id="prodDesc"
+                                            rows="2" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="prodBadge" class="form-label text-white-50 small">ETIQUETA
+                                            (Opcional)</label>
+                                        <select class="form-select bg-dark text-white border-secondary" id="prodBadge">
+                                            <option value="">Ninguna</option>
+                                            <option value="Nuevo">Nuevo</option>
+                                            <option value="Más vendido">Más vendido</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="prodImage" class="form-label text-white-50 small">IMAGEN</label>
+                                        <input type="file" class="form-control bg-dark text-white border-secondary"
+                                            id="prodImage" accept="image/*" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning w-100 fw-bold">Guardar
+                                        Producto</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Productos -->
+                    <div class="col-md-8">
+                        <div class="card bg-dark text-white border-secondary shadow-sm">
+                            <div class="card-header border-secondary">
+                                <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i> Inventario Actual</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-hover mb-0 align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Img</th>
+                                                <th>Nombre</th>
+                                                <th>Tipo</th>
+                                                <th>Precio</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="productsTableBody">
+                                            <!-- Products loaded via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Ajustes -->
+            <div id="section-ajustes" style="display: none;">
+                <h3 class="mb-4"><i class="bi bi-gear-fill text-warning"></i> Configuración del Dashboard</h3>
+
+                <div class="row">
+                    <!-- Widget Visibility Settings -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card bg-dark border-secondary p-4 shadow-sm h-100">
+                            <h5 class="mb-4 text-white border-bottom border-secondary pb-2">
+                                <i class="bi bi-eye text-info"></i> Visualización de Widgets
+                            </h5>
+
+                            <div class="d-flex flex-column gap-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input bg-secondary border-0" type="checkbox"
+                                        id="check-visits" onchange="toggleWidget('card-visits', this.checked)" checked>
+                                    <label class="form-check-label text-light fs-6" for="check-visits">Mostrar Visitas
+                                        Totales</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input bg-secondary border-0" type="checkbox"
+                                        id="check-quotes" onchange="toggleWidget('card-quotes', this.checked)" checked>
+                                    <label class="form-check-label text-light fs-6" for="check-quotes">Mostrar
+                                        Cotizaciones</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input bg-secondary border-0" type="checkbox"
+                                        id="check-conversion" onchange="toggleWidget('card-conversion', this.checked)"
+                                        checked>
+                                    <label class="form-check-label text-light fs-6" for="check-conversion">Mostrar Tasa
+                                        de Conversión</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input bg-secondary border-0" type="checkbox"
+                                        id="check-forms" onchange="toggleWidget('card-forms', this.checked)" checked>
+                                    <label class="form-check-label text-light fs-6" for="check-forms">Mostrar Leads
+                                        (Email)</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input bg-secondary border-0" type="checkbox"
+                                        id="check-prod-chart"
+                                        onchange="toggleWidget('chart-product-container', this.checked)" checked>
+                                    <label class="form-check-label text-light fs-6" for="check-prod-chart">Mostrar
+                                        Gráfico Productos</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input bg-secondary border-0" type="checkbox"
+                                        id="check-traf-chart"
+                                        onchange="toggleWidget('chart-traffic-container', this.checked)" checked>
+                                    <label class="form-check-label text-light fs-6" for="check-traf-chart">Mostrar
+                                        Gráfico Tráfico</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Settings -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card bg-dark border-secondary p-4 shadow-sm h-100">
+                            <h5 class="mb-4 text-white border-bottom border-secondary pb-2">
+                                <i class="bi bi-shield-lock text-danger"></i> Seguridad
+                            </h5>
+                            <form id="changePassForm">
+                                <div class="mb-3">
+                                    <label class="form-label text-white-50 small">CONTRASEÑA ACTUAL</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-secondary border-secondary text-white"><i
+                                                class="bi bi-key"></i></span>
+                                        <input type="password" id="currentPass"
+                                            class="form-control bg-dark text-white border-secondary" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-white-50 small">NUEVA CONTRASEÑA</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-secondary border-secondary text-white"><i
+                                                class="bi bi-lock-fill"></i></span>
+                                        <input type="password" id="newPass"
+                                            class="form-control bg-dark text-white border-secondary" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-warning w-100 fw-bold mt-3">
+                                    <i class="bi bi-save"></i> CAMBIAR CONTRASEÑA
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const API_STATS_URL = 'http://localhost:3000/api/stats';
+        const API_LOGIN_URL = 'http://localhost:3000/api/login';
+        const API_CHANGE_PASS_URL = 'http://localhost:3000/api/change-password';
+        const API_SALES_URL = 'http://localhost:3000/api/sales';
+
+        let productsChartInstance = null;
+        let trafficChartInstance = null;
+        let salesGrowthChartInstance = null;
+        let globalStats = null;
+        let globalSales = []; // Store sales locally for filtering/editing
+        let editingSaleId = null; // Track if we are editing
+        let currentChartFilter = 'month';
+
+        // --- Login Logic ---
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const pass = document.getElementById('adminPass').value;
+
+            try {
+                const res = await fetch(API_LOGIN_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pass })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const loginSection = document.getElementById('loginSection');
+                    loginSection.style.display = 'none';
+                    loginSection.classList.remove('d-flex');
+
+                    document.getElementById('dashboardSection').style.display = 'flex';
+                    localStorage.setItem('adminLoggedIn', 'true');
+                    loadStats();
+                    loadPreferences();
+                } else {
+                    showLoginError();
+                }
+            } catch (err) {
+                alert('Error conectando con el servidor.');
+            }
+        });
+
+        function showLoginError() {
+            const errorMsg = document.getElementById('loginError');
+            errorMsg.style.display = 'block';
+            const card = document.querySelector('.card');
+            card.classList.add('border-danger');
+            setTimeout(() => card.classList.remove('border-danger'), 500);
+        }
+
+        // --- Navigation Logic ---
+        function showSection(sectionId) {
+            document.getElementById('section-resumen').style.display = 'none';
+            document.getElementById('section-admin').style.display = 'none';
+            document.getElementById('section-ajustes').style.display = 'none';
+            document.getElementById('section-productos-admin').style.display = 'none';
+
+            document.getElementById('nav-resumen').classList.remove('active');
+            document.getElementById('nav-admin').classList.remove('active');
+            document.getElementById('nav-ajustes').classList.remove('active');
+            document.getElementById('nav-productos-admin').classList.remove('active');
+
+            document.getElementById('section-' + sectionId).style.display = 'block';
+            document.getElementById('nav-' + sectionId).classList.add('active');
+
+            // Save state
+            localStorage.setItem('currentSection', sectionId);
+
+            if (sectionId === 'admin') loadSales();
+            if (sectionId === 'productos-admin') loadProductsAdmin();
+        }
+
+        // --- Sales Logic ---
+        // --- Sales Logic ---
+
+        // Product Catalog
+        const catalog = {
+            parrillas: [
+                "Fogoneros Pellet",
+                "Parrilla Compacta Spiedo",
+                "Fogonero Vertical Premium",
+                "Parrilla Doble Elevación",
+                "Fogonero Geométrico",
+                "Fogonero Jaula Master",
+                "Parrilla Mixta Plancha",
+                "Fogonero Disco Pro",
+                "Fogonero Circular Asador",
+                "Parrilla Doble Nivel",
+                "Insert Quincho Doble",
+                "Asador Cruz Pampa"
+            ],
+            articulos: [
+                "Carbón Espino Premium",
+                "Spiedo Eléctrico Universal"
+            ]
+        };
+
+        function updateProductOptions() {
+            const category = document.querySelector('input[name="category"]:checked').value;
+            const selectInfo = document.getElementById('productSelectContainer');
+            const customInfo = document.getElementById('customProductContainer');
+            const select = document.getElementById('saleProduct');
+
+            select.innerHTML = ''; // Clear options
+
+            if (category === 'otros') {
+                selectInfo.style.display = 'none';
+                customInfo.style.display = 'block';
+                document.getElementById('customProduct').required = true;
+                select.required = false;
+            } else {
+                selectInfo.style.display = 'block';
+                customInfo.style.display = 'none';
+                document.getElementById('customProduct').required = false;
+                select.required = true;
+
+                // Populate Dropdown
+                const items = catalog[category] || [];
+                items.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    option.textContent = item;
+                    select.appendChild(option);
+                });
+
+                // Always add an "Otro" option within the category just in case
+                const otherOpt = document.createElement('option');
+                otherOpt.value = "Otro";
+                otherOpt.textContent = "Otro (Especificar)";
+                select.appendChild(otherOpt);
+            }
+        }
+
+        // Initialize options on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default date to today
+            document.getElementById('saleDate').valueAsDate = new Date();
+            updateProductOptions();
+
+            // Listen for "Otro" selection in dropdown to toggle custom input
+            document.getElementById('saleProduct').addEventListener('change', function () {
+                const customInfo = document.getElementById('customProductContainer');
+                if (this.value === 'Otro') {
+                    customInfo.style.display = 'block';
+                    document.getElementById('customProduct').required = true;
+                    document.getElementById('customProduct').focus();
+                } else {
+                    customInfo.style.display = 'none';
+                    document.getElementById('customProduct').required = false;
+                }
+            });
+
+            // Listen for changes to cancel edit mode
+            const formInputs = document.querySelectorAll('input[name="category"], #saleProduct, #customProduct');
+            formInputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    if (typeof editingSaleId !== 'undefined' && editingSaleId) {
+                        cancelEdit();
+                    }
+                });
+            });
+
+
+        });
+
+        document.getElementById('salesForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const date = document.getElementById('saleDate').value;
+            const amount = document.getElementById('saleAmount').value;
+
+            let product = '';
+            const category = document.querySelector('input[name="category"]:checked').value;
+            const selectVal = document.getElementById('saleProduct').value;
+            const customVal = document.getElementById('customProduct').value;
+
+            if (category === 'otros' || selectVal === 'Otro') {
+                product = customVal;
+            } else {
+                product = selectVal;
+            }
+
+            if (!product) {
+                alert("Por favor ingrese el nombre del producto.");
+                return;
+            }
+
+            // If not editing, format with Category Tag. If Editing, keep as is unless logic changes (simplified: always re-tag for consistency)
+            const finalProduct = (editingSaleId && product.startsWith('[')) ? product : `[${category.toUpperCase()}] ${product}`;
+
+            try {
+                let url = API_SALES_URL;
+                let method = 'POST';
+
+                if (editingSaleId) {
+                    url += '/' + editingSaleId;
+                    method = 'PUT';
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date, product: finalProduct, amount })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Error al guardar en servidor');
+
+                // Reset Form
+                cancelEdit(); // Helper to reset UI
+                loadSales();
+            } catch (err) {
+                console.error(err);
+                alert("Error: " + err.message);
+            }
+        });
+
+        // Helper to reset form state
+        function cancelEdit() {
+            document.getElementById('salesForm').reset();
+            document.getElementById('saleDate').valueAsDate = new Date();
+            document.getElementById('catParrillas').checked = true;
+            updateProductOptions();
+
+            editingSaleId = null;
+            const btn = document.querySelector('#salesForm button[type="submit"]');
+            btn.innerHTML = 'GUARDAR VENTA';
+            btn.classList.remove('btn-info');
+            btn.classList.add('btn-warning');
+        }
+
+        async function loadSales() {
+            try {
+                const res = await fetch(API_SALES_URL);
+                const sales = await res.json();
+                globalSales = sales; // Store for chart filtering
+
+                // Sort Newest First
+                sales.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                // 1. Calculate Total Revenue
+                const totalRevenue = sales.reduce((sum, sale) => sum + parseInt(sale.amount || 0), 0);
+                const revenueDisplay = document.getElementById('totalRevenueDisplay');
+                if (revenueDisplay) revenueDisplay.innerText = '$' + totalRevenue.toLocaleString('es-CL');
+
+                // 2. Update Table
+                const tbody = document.getElementById('salesTableBody');
+                tbody.innerHTML = '';
+
+                sales.forEach(sale => {
+                    const row = `<tr>
+                        <td>${sale.date}</td>
+                        <td>${sale.product}</td>
+                        <td class="text-success fw-bold">$${parseInt(sale.amount).toLocaleString('es-CL')}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info me-1" onclick="editSale('${sale.id}')"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSale('${sale.id}')"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+
+                // 3. Update Chart
+                updateSalesChart(); // Uses globalSales and currentChartFilter
+
+            } catch (err) {
+                console.error("Error loading sales", err);
+            }
+        }
+
+        async function deleteSale(id) {
+            if (!confirm("¿Seguro que deseas eliminar esta venta?")) return;
+            try {
+                const res = await fetch(API_SALES_URL + '/' + id, { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Error al eliminar');
+                loadSales();
+            } catch (e) {
+                console.error(e);
+                alert("Error: " + e.message);
+            }
+        }
+
+        function editSale(id) {
+            const sale = globalSales.find(s => s.id === id);
+            if (!sale) return;
+
+            editingSaleId = id;
+            document.getElementById('saleDate').value = sale.date;
+            document.getElementById('saleAmount').value = sale.amount;
+
+            // Attempt to parse Category and Name from "[CAT] Name"
+            const match = sale.product.match(/^\[(.*?)\]\s*(.*)$/);
+
+            if (match) {
+                const cat = match[1].toLowerCase();
+                const name = match[2];
+
+                // Select Category Radio
+                if (document.getElementById('cat' + capitalize(cat))) {
+                    document.getElementById('cat' + capitalize(cat)).checked = true;
+                } else {
+                    document.getElementById('catOtros').checked = true;
+                }
+                updateProductOptions(); // Refresh dropdown
+
+                // Select Product
+                const select = document.getElementById('saleProduct');
+                // Check if option exists
+                let optionFound = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === name) {
+                        select.selectedIndex = i;
+                        optionFound = true;
+                        break;
+                    }
+                }
+
+                if (!optionFound) {
+                    // It's a custom or 'Other' product
+                    select.value = 'Otro';
+                    // Trigger change to show input
+                    select.dispatchEvent(new Event('change'));
+                    document.getElementById('customProduct').value = name;
+                }
+            } else {
+                // Fallback for legacy format
+                document.getElementById('catOtros').checked = true;
+                updateProductOptions();
+                document.getElementById('saleProduct').value = 'Otro';
+                const select = document.getElementById('saleProduct');
+                select.dispatchEvent(new Event('change'));
+                document.getElementById('customProduct').value = sale.product;
+            }
+
+            // Change Button to Update
+            const btn = document.querySelector('#salesForm button[type="submit"]');
+            btn.innerHTML = 'ACTUALIZAR VENTA';
+            btn.classList.remove('btn-warning');
+            btn.classList.add('btn-info');
+
+            // Scroll to form
+            document.getElementById('section-admin').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function capitalize(s) {
+            if (!s) return '';
+            return s.charAt(0).toUpperCase() + s.slice(1);
+        }
+
+        function changeChartFilter(filter) {
+            currentChartFilter = filter;
+            updateSalesChart();
+        }
+
+        function updateSalesChart() {
+            const ctx = document.getElementById('salesGrowthChart');
+            if (!ctx) return;
+
+            const sales = globalSales;
+            const groupedData = {};
+
+            // Grouping Logic
+            sales.forEach(sale => {
+                const d = new Date(sale.date);
+                d.setMinutes(d.getMinutes() + d.getTimezoneOffset()); // Fix Day Off-by-one due to timezone
+
+                let key = '';
+                if (currentChartFilter === 'day') {
+                    key = sale.date; // already YYYY-MM-DD
+                } else if (currentChartFilter === 'month') {
+                    key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`; // YYYY-MM
+                } else if (currentChartFilter === 'year') {
+                    key = `${d.getFullYear()}`;
+                }
+
+                if (!groupedData[key]) groupedData[key] = 0;
+                groupedData[key] += parseInt(sale.amount);
+            });
+
+            // Sort Keys
+            const sortedKeys = Object.keys(groupedData).sort();
+            const data = sortedKeys.map(k => groupedData[k]);
+
+            // Format Labels for Display
+            const labels = sortedKeys.map(k => {
+                const [y, m, d] = k.split('-');
+                if (currentChartFilter === 'day') return `${d}/${m}`;
+                if (currentChartFilter === 'month') {
+                    const dateObj = new Date(y, m - 1);
+                    return dateObj.toLocaleString('es-CL', { month: 'short', year: 'numeric' });
+                }
+                return k; // Year
+            });
+
+            if (salesGrowthChartInstance) {
+                salesGrowthChartInstance.destroy();
+            }
+
+            salesGrowthChartInstance = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Ingresos ($)',
+                        data: data,
+                        backgroundColor: 'rgba(255, 193, 7, 0.6)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: '#ccc' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#ccc' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#fff' } },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return '$' + context.parsed.y.toLocaleString('es-CL');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (salesGrowthChartInstance) {
+                salesGrowthChartInstance.destroy();
+            }
+
+            salesGrowthChartInstance = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Ventas ($)',
+                        data: data,
+                        backgroundColor: 'rgba(255, 193, 7, 0.6)', // Fire Yellow
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: '#ccc' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#ccc' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#fff' } }
+                    }
+                }
+            });
+        }
+
+        // --- Stats & Filtering Logic ---
+        async function loadStats() {
+            try {
+                const res = await fetch(API_STATS_URL);
+                globalStats = await res.json();
+                applyDateFilter();
+            } catch (err) { console.error(err); }
+        }
+
+        function applyDateFilter() {
+            if (!globalStats) return;
+            const filter = document.getElementById('dateFilter').value;
+            let displayStats = { visits: 0, quotes: 0, contact_attempts: 0, social_clicks: 0, products: {} };
+
+            if (filter === 'all') {
+                displayStats = globalStats;
+            } else {
+                const today = new Date();
+                const history = globalStats.history || {};
+
+                Object.keys(history).forEach(dateStr => {
+                    const d = new Date(dateStr);
+                    let include = false;
+
+                    if (filter === 'today') {
+                        include = dateStr === today.toISOString().split('T')[0];
+                    } else if (filter === 'week') {
+                        const sevenDaysAgo = new Date();
+                        sevenDaysAgo.setDate(today.getDate() - 7);
+                        include = new Date(dateStr) >= sevenDaysAgo;
+                    } else if (filter === 'month') {
+                        include = (d.getMonth() === today.getMonth()) && (d.getFullYear() === today.getFullYear());
+                    }
+
+                    if (include) {
+                        const day = history[dateStr];
+                        displayStats.visits += day.visits || 0;
+                        displayStats.quotes += day.quotes || 0;
+                        displayStats.contact_attempts += day.contact_attempts || 0;
+                        displayStats.social_clicks += day.social_clicks || 0;
+
+                        // Merge products
+                        if (day.products) {
+                            Object.entries(day.products).forEach(([prod, count]) => {
+                                displayStats.products[prod] = (displayStats.products[prod] || 0) + count;
+                            });
+                        }
+                    }
+                });
+            }
+
+            updateUI(displayStats);
+        }
+
+        function updateUI(stats) {
+            // Update Counters
+            updateCounter("val-visits", stats.visits || 0);
+            updateCounter("val-quotes", stats.quotes || 0);
+            updateCounter("val-forms", stats.contact_attempts || 0);
+
+            // Calculate Conversion
+            const visits = stats.visits || 1;
+            const quotes = stats.quotes || 0;
+            const conversion = ((quotes / visits) * 100).toFixed(1);
+            document.getElementById("val-conversion").innerText = conversion + '%';
+
+            // Render Charts
+            renderProductsChart(stats.products || {});
+            renderTrafficChart(stats);
+        }
+
+        // --- Settings Logic ---
+        function toggleWidget(elementId, isChecked) {
+            const el = document.getElementById(elementId);
+            if (el) el.style.display = isChecked ? 'block' : 'none';
+            localStorage.setItem('pref_' + elementId, isChecked);
+        }
+
+        function loadPreferences() {
+            const widgets = ['card-visits', 'card-quotes', 'card-conversion', 'card-forms', 'chart-product-container', 'chart-traffic-container'];
+            const checkboxMap = {
+                'card-visits': 'check-visits',
+                'card-quotes': 'check-quotes',
+                'card-conversion': 'check-conversion',
+                'card-forms': 'check-forms',
+                'chart-product-container': 'check-prod-chart',
+                'chart-traffic-container': 'check-traf-chart'
+            };
+
+            widgets.forEach(id => {
+                const pref = localStorage.getItem('pref_' + id);
+                // If preference is explicitly 'false', hide it. Otherwise, show (default or 'true').
+                const isUnchecked = pref === 'false';
+
+                const el = document.getElementById(id);
+                const check = document.getElementById(checkboxMap[id]);
+
+                if (el) {
+                    el.style.display = isUnchecked ? 'none' : 'block';
+                }
+                if (check) {
+                    check.checked = !isUnchecked;
+                }
+            });
+        }
+
+        document.getElementById('changePassForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const currentPass = document.getElementById('currentPass').value;
+            const newPass = document.getElementById('newPass').value;
+
+            try {
+                const res = await fetch(API_CHANGE_PASS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('Contraseña actualizada correctamente.');
+                    document.getElementById('changePassForm').reset();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                alert('Error de conexión.');
+            }
+        });
+
+        // --- Product Management Logic ---
+        let editingProductId = null;
+        let globalProducts = []; // To easily find product for editing
+
+        async function loadProductsAdmin() {
+            try {
+                const res = await fetch('http://localhost:3000/api/products');
+                const products = await res.json();
+                globalProducts = products; // Cache
+                const tbody = document.getElementById('productsTableBody');
+                tbody.innerHTML = '';
+
+                products.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><img src="${p.image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
+                        <td>${p.name} <br> <small class="text-muted">${p.id}</small></td>
+                        <td><span class="badge ${p.type === 'parrilla' ? 'bg-danger' : 'bg-info'}">${p.type}</span>
+                            ${p.badge ? `<br><span class="badge bg-warning text-dark mt-1">${p.badge}</span>` : ''}
+                        </td>
+                        <td>${p.price}</td>
+                        <td>
+                            <button onclick="editProduct('${p.id}')" class="btn btn-sm btn-outline-info me-1">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button onclick="deleteProduct('${p.id}')" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.error("Error loading products:", e);
+            }
+        }
+
+        function editProduct(id) {
+            const p = globalProducts.find(product => product.id === id);
+            if (!p) return;
+
+            editingProductId = id;
+
+            // Populate Form
+            document.getElementById('prodName').value = p.name;
+            document.getElementById('prodType').value = p.type;
+            document.getElementById('prodPrice').value = p.price;
+            document.getElementById('prodDesc').value = p.description;
+            // Handle Badge dropdown - if value doesn't exist in options, it might default to empty, 
+            // but our current options are limited. If p.badge is unique, we might need to add it or just set value.
+            document.getElementById('prodBadge').value = p.badge || "";
+
+            // Image is file input, cannot set value. But we can show a label or note.
+            document.getElementById('prodImage').required = false; // Not required on edit
+
+            // Allow user to clear editing mode
+            document.getElementById('formTitle').innerHTML = `<i class="bi bi-pencil-square me-2"></i> Editando Producto <button onclick="cancelProductEdit()" class="btn btn-sm btn-outline-secondary float-end">Cancelar</button>`;
+            const submitBtn = document.querySelector('#productForm button[type="submit"]');
+            submitBtn.textContent = "Actualizar Producto";
+            submitBtn.classList.remove('btn-warning');
+            submitBtn.classList.add('btn-info');
+
+            // Scroll to form
+            document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelProductEdit() {
+            editingProductId = null;
+            document.getElementById('productForm').reset();
+            document.getElementById('prodImage').required = true;
+
+            document.getElementById('formTitle').innerHTML = `<i class="bi bi-plus-circle me-2"></i> Nuevo Producto`;
+            const submitBtn = document.querySelector('#productForm button[type="submit"]');
+            submitBtn.textContent = "Guardar Producto";
+            submitBtn.classList.remove('btn-info');
+            submitBtn.classList.add('btn-warning');
+        }
+
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('name', document.getElementById('prodName').value);
+            formData.append('type', document.getElementById('prodType').value);
+            formData.append('price', document.getElementById('prodPrice').value);
+            formData.append('description', document.getElementById('prodDesc').value);
+            formData.append('badge', document.getElementById('prodBadge').value);
+
+            const imageFile = document.getElementById('prodImage').files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            const action = editingProductId ? "Actualizar" : "Guardar";
+            if (!confirm(`¿${action} este producto?`)) return;
+
+            try {
+                let url = 'http://localhost:3000/api/products';
+                let method = 'POST';
+
+                if (editingProductId) {
+                    url += '/' + editingProductId;
+                    method = 'PUT';
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert(`Producto ${editingProductId ? 'actualizado' : 'agregado'} correctamente`);
+                    cancelProductEdit(); // Reset form
+                    loadProductsAdmin();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error al conectar con el servidor');
+            }
+        });
+
+        async function deleteProduct(id) {
+            if (!confirm('¿Seguro que deseas eliminar este producto?')) return;
+
+            try {
+                const res = await fetch(`http://localhost:3000/api/products/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+
+                if (data.success) {
+                    loadProductsAdmin();
+                } else {
+                    alert('Error al eliminar');
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+
+        // Global init
+        if (localStorage.getItem('adminLoggedIn') === 'true') {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('loginSection').classList.remove('d-flex');
+            document.getElementById('dashboardSection').style.display = 'flex';
+            loadStats();
+            loadPreferences();
+
+            // Restore last active section
+            const lastSection = localStorage.getItem('currentSection') || 'resumen';
+            showSection(lastSection);
+
+            if (lastSection === 'productos-admin') loadProductsAdmin();
+        }
+
+
+
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            location.reload();
+        }
+
+
+
+        function updateCounter(id, value) {
+            document.getElementById(id).innerText = value;
+        }
+
+        function renderProductsChart(productsData) {
+            const ctx = document.getElementById('productsChart').getContext('2d');
+            const labels = Object.keys(productsData);
+            const data = Object.values(productsData);
+
+            if (productsChartInstance) productsChartInstance.destroy();
+
+            productsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.length ? labels : ['Sin datos'],
+                    datasets: [{
+                        label: 'Cotizaciones',
+                        data: data.length ? data : [0],
+                        backgroundColor: 'rgba(244, 107, 27, 0.7)',
+                        borderColor: 'rgba(244, 107, 27, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#333' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderTrafficChart(stats) {
+            const ctx = document.getElementById('trafficChart').getContext('2d');
+
+            if (trafficChartInstance) trafficChartInstance.destroy();
+
+            trafficChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['WhatsApp', 'Email/Form', 'Redes Sociales'],
+                    datasets: [{
+                        data: [stats.quotes || 0, stats.contact_attempts || 0, stats.social_clicks || 0],
+                        backgroundColor: ['#2ecc71', '#9b59b6', '#bc2a8d'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
