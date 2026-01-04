@@ -1,10 +1,10 @@
 {
-  "visits": 39,
-  "quotes": 23,
-  "contact_attempts": 13,
+  "visits": 46,
+  "quotes": 26,
+  "contact_attempts": 14,
   "social_clicks": 3,
   "products": {
-    "Fogoneros Pellet": 5,
+    "Fogoneros Pellet": 6,
     "Parrilla Compacta Spiedo": 1,
     "Fogonero Vertical Premium": 3,
     "Parrilla Doble Elevación": 2,
@@ -12,7 +12,9 @@
     "Fogonero Jaula Master": 4,
     "Fogonero Disco Pro": 1,
     "Fogonero Circular Asador": 4,
-    "Parrilla Mixta Plancha": 1
+    "Parrilla Mixta Plancha": 1,
+    "Spiedo Eléctrico Universal": 1,
+    "General": 1
   },
   "sales": [
     {
@@ -49,6 +51,14 @@
       "product": "[PARRILLAS] Fogonero Vertical Premium",
       "amount": "130000",
       "createdAt": "2026-01-03T20:19:41.214Z"
+    },
+    {
+      "id": "1767541868896",
+      "date": "2026-01-04",
+      "product": "[ARTICULOS] Spiedo Eléctrico Universal",
+      "amount": "120000",
+      "notes": "",
+      "createdAt": "2026-01-04T15:51:08.896Z"
     }
   ],
   "history": {
@@ -68,10 +78,21 @@
         "Fogonero Circular Asador": 4,
         "Parrilla Mixta Plancha": 1
       }
+    },
+    "2026-01-04": {
+      "visits": 7,
+      "quotes": 3,
+      "contact_attempts": 1,
+      "social_clicks": 0,
+      "products": {
+        "Fogoneros Pellet": 1,
+        "Spiedo Eléctrico Universal": 1,
+        "General": 1
+      }
     }
   },
   "email_usage": {
-    "date": "2026-01-03",
-    "count": 8
+    "date": "2026-01-04",
+    "count": 1
   }
 }

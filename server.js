@@ -4,14 +4,61 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
+const xss = require('xss');
 
 const app = express();
 const PORT = 3000;
 const STATS_FILE = path.join(__dirname, 'stats.json');
 
+const JWT_SECRET = 'secreto_super_seguro_cambiar_en_produccion'; // En prod usar variable de entorno
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(__dirname)); // Serve static files from root
+
+// --- Middleware de Seguridad ---
+
+// 1. Rate Limiter para API general (evitar fuerza bruta y spam)
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 100, // Limite de 100 peticiones por IP
+    message: { success: false, message: 'Demasiadas peticiones desde esta IP, intenta de nuevo más tarde.' }
+});
+
+// 2. Rate Limiter estricto para correos y tracking
+const strictLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hora
+    max: 10, // Max 10 correos/trackings por hora por IP
+    message: { success: false, message: 'Has excedido el límite de actividad.' }
+});
+
+// 3. Middleware de Verificación de Token (JWT)
+function verifyToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+
+    if (!token) {
+        return res.status(401).json({ success: false, message: 'Acceso denegado. Token no proporcionado.' });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: 'Token inválido o expirado.' });
+        }
+        req.user = user;
+        next();
+    });
+}
+
+// 4. Sanitización de Inputs (Helper)
+function sanitize(input) {
+    if (typeof input === 'string') {
+        return xss(input);
+    }
+    return input;
+}
 
 // Initialize stats if not exists
 if (!fs.existsSync(STATS_FILE)) {
@@ -40,7 +87,8 @@ function saveStats(stats) {
 
 // Endpoint: Track Event
 // Endpoint: Track Event
-app.post('/api/track', (req, res) => {
+// Endpoint: Track Event
+app.post('/api/track', strictLimiter, (req, res) => {
     const { type, productName } = req.body;
     const stats = getStats();
     const today = new Date().toISOString().split('T')[0];
@@ -74,20 +122,34 @@ app.post('/api/track', (req, res) => {
 });
 
 // Endpoint: Sales Administration
-app.get('/api/sales', (req, res) => {
+app.get('/api/sales', verifyToken, (req, res) => {
     const stats = getStats();
     res.json(stats.sales || []);
 });
 
-app.post('/api/sales', (req, res) => {
+app.post('/api/sales', verifyToken, (req, res) => {
     const { date, product, amount, notes } = req.body;
     const stats = getStats();
 
     if (!stats.sales) stats.sales = [];
 
     // Auto-generate ID (simple)
+    // Auto-generate ID (simple)
     const id = Date.now().toString();
-    const sale = { id, date, product, amount, notes, createdAt: new Date().toISOString() };
+
+    // Validación Básica
+    if (!product || !amount) {
+        return res.status(400).json({ success: false, message: 'Producto y monto son obligatorios.' });
+    }
+    if (isNaN(amount) || amount < 0) {
+        return res.status(400).json({ success: false, message: 'El monto debe ser un número positivo.' });
+    }
+
+    // Sanitización
+    const cleanProduct = sanitize(product);
+    const cleanNotes = notes ? sanitize(notes) : '';
+
+    const sale = { id, date, product: cleanProduct, amount, notes: cleanNotes, createdAt: new Date().toISOString() };
 
     stats.sales.push(sale);
     saveStats(stats);
@@ -95,7 +157,7 @@ app.post('/api/sales', (req, res) => {
     res.json({ success: true, sale });
 });
 
-app.delete('/api/sales/:id', (req, res) => {
+app.delete('/api/sales/:id', verifyToken, (req, res) => {
     const { id } = req.params;
     const stats = getStats();
 
@@ -106,15 +168,19 @@ app.delete('/api/sales/:id', (req, res) => {
     res.json({ success: true });
 });
 
-app.put('/api/sales/:id', (req, res) => {
+app.put('/api/sales/:id', verifyToken, (req, res) => {
     const { id } = req.params;
     const { date, product, amount } = req.body;
     const stats = getStats();
 
+    // Validación & Sanitización en Update
+    if (!product || !amount) return res.status(400).json({ success: false, message: 'Datos incompletos.' });
+    const cleanProduct = sanitize(product);
+
     if (stats.sales) {
         const index = stats.sales.findIndex(s => s.id === id);
         if (index !== -1) {
-            stats.sales[index] = { ...stats.sales[index], date, product, amount };
+            stats.sales[index] = { ...stats.sales[index], date, product: cleanProduct, amount };
             saveStats(stats);
             return res.json({ success: true });
         }
@@ -148,14 +214,16 @@ app.post('/api/login', (req, res) => {
     const { password } = req.body;
     const config = getConfig();
     if (password === config.password) {
-        res.json({ success: true });
+        // Generar Token
+        const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '8h' });
+        res.json({ success: true, token });
     } else {
         res.status(401).json({ success: false, message: 'Invalid password' });
     }
 });
 
 // Endpoint: Change Password
-app.post('/api/change-password', (req, res) => {
+app.post('/api/change-password', verifyToken, (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const config = getConfig();
 
@@ -169,7 +237,7 @@ app.post('/api/change-password', (req, res) => {
 });
 
 // Endpoint: Send Email
-app.post('/api/send-email', async (req, res) => {
+app.post('/api/send-email', strictLimiter, async (req, res) => {
     const { nombre, email, mensaje } = req.body;
     const config = getConfig();
 
@@ -424,7 +492,20 @@ const storage = multer.diskStorage({
         cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
-const upload = multer({ storage: storage });
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: function (req, file, cb) {
+        const filetypes = /jpeg|jpg|png|gif|webp/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb(new Error('Solo se permiten imágenes (jpeg, jpg, png, gif, webp)'));
+    }
+});
 
 const PRODUCTS_FILE = path.join(__dirname, 'products.json');
 
@@ -449,24 +530,54 @@ app.get('/api/products', (req, res) => {
 });
 
 // API: Add Product
-app.post('/api/products', upload.single('image'), (req, res) => {
+app.post('/api/products', verifyToken, upload.single('image'), (req, res) => {
     try {
-        const { name, type, price, description, badge } = req.body;
+        const { name, type, price, priceMode, description, badge } = req.body;
+
+        // Sanitización
+        const cleanName = sanitize(name);
+        const cleanDesc = sanitize(description);
+
+        // Validation: Character Limits
+        if (cleanName.length > 40) {
+            return res.status(400).json({ success: false, message: 'El nombre no puede exceder los 40 caracteres.' });
+        }
+        if (cleanDesc.length > 200) {
+            return res.status(400).json({ success: false, message: 'La descripción no puede exceder los 200 caracteres.' });
+        }
+
+        // Price Validation Logic
+        let finalPrice = 'Consultar';
+        let finalPriceMode = 'consultar';
+
+        if (priceMode === 'monto') {
+            const numPrice = Number(price);
+            if (isNaN(numPrice) || numPrice <= 0) {
+                return res.status(400).json({ success: false, message: 'El precio debe ser un número positivo.' });
+            }
+            if (numPrice > 10000000) {
+                return res.status(400).json({ success: false, message: 'El precio excede el límite permitido.' });
+            }
+            finalPrice = numPrice; // Store as number
+            finalPriceMode = 'monto';
+        }
+
         const products = getProducts();
 
-        // Unique Badge Logic
+        // Unique Badge Logic (Per Category)
         if (badge === 'Más vendido') {
             products.forEach(p => {
-                if (p.badge === 'Más vendido') p.badge = '';
+                if (p.type === type && p.badge === 'Más vendido') p.badge = '';
             });
         }
 
         const newProduct = {
             id: Date.now().toString(),
-            name,
+            name: cleanName,
             type, // 'parrilla' or 'articulo'
-            price: price || 'Consultar',
-            description,
+            price: finalPrice,
+            priceMode: finalPriceMode,
+            description: cleanDesc,
             badge: badge || '', // 'Nuevo', 'Más vendido', etc.
             image: req.file ? 'img/' + req.file.filename : 'img/default.jpg' // Save relative path
         };
@@ -482,10 +593,10 @@ app.post('/api/products', upload.single('image'), (req, res) => {
 });
 
 // API: Update Product
-app.put('/api/products/:id', upload.single('image'), (req, res) => {
+app.put('/api/products/:id', verifyToken, upload.single('image'), (req, res) => {
     try {
         const { id } = req.params;
-        const { name, type, price, description, badge } = req.body;
+        const { name, type, price, priceMode, description, badge } = req.body;
         const products = getProducts();
 
         const index = products.findIndex(p => p.id === id);
@@ -493,18 +604,49 @@ app.put('/api/products/:id', upload.single('image'), (req, res) => {
             return res.status(404).json({ success: false, message: 'Producto no encontrado' });
         }
 
-        // Unique Badge Logic
+        // Price Validation Logic
+        let finalPrice = 'Consultar';
+        let finalPriceMode = 'consultar';
+
+        if (priceMode === 'monto') {
+            const numPrice = Number(price);
+            if (isNaN(numPrice) || numPrice <= 0) {
+                return res.status(400).json({ success: false, message: 'El precio debe ser un número positivo > 0.' });
+            }
+            if (numPrice > 10000000) {
+                return res.status(400).json({ success: false, message: 'El precio excede el límite permitido.' });
+            }
+            finalPrice = numPrice;
+            finalPriceMode = 'monto';
+        } else {
+            // Force strict "Consultar" mode if not 'monto'
+            finalPrice = 'Consultar';
+            finalPriceMode = 'consultar';
+        }
+
+        // Unique Badge Logic (Per Category)
         if (badge === 'Más vendido') {
             products.forEach(p => {
-                if (p.id !== id && p.badge === 'Más vendido') p.badge = '';
+                if (p.id !== id && p.type === type && p.badge === 'Más vendido') p.badge = '';
             });
         }
 
-        // Update fields
-        products[index].name = name;
+        // Update fields with sanitization
+        const cleanName = sanitize(name);
+        const cleanDesc = sanitize(description);
+
+        if (cleanName.length > 40) {
+            return res.status(400).json({ success: false, message: 'El nombre no puede exceder los 40 caracteres.' });
+        }
+        if (cleanDesc.length > 200) {
+            return res.status(400).json({ success: false, message: 'La descripción no puede exceder los 200 caracteres.' });
+        }
+
+        products[index].name = cleanName;
         products[index].type = type;
-        products[index].price = price;
-        products[index].description = description;
+        products[index].price = finalPrice;
+        products[index].priceMode = finalPriceMode;
+        products[index].description = cleanDesc;
         products[index].badge = badge || '';
 
         // Update image only if new one uploaded
@@ -522,7 +664,7 @@ app.put('/api/products/:id', upload.single('image'), (req, res) => {
 });
 
 // API: Delete Product
-app.delete('/api/products/:id', (req, res) => {
+app.delete('/api/products/:id', verifyToken, (req, res) => {
     try {
         const { id } = req.params;
         let products = getProducts();
@@ -546,6 +688,18 @@ app.delete('/api/products/:id', (req, res) => {
         console.error(e);
         res.status(500).json({ success: false, message: 'Error deleting product' });
     }
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        // Multer-specific errors (e.g. File too large)
+        return res.status(400).json({ success: false, message: `Error de carga: ${err.message}` });
+    } else if (err) {
+        // Other errors (e.g. Invalid file type from fileFilter)
+        return res.status(400).json({ success: false, message: err.message || 'Error interno del servidor' });
+    }
+    next();
 });
 
 app.listen(PORT, () => {

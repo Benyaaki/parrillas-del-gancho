@@ -568,15 +568,29 @@
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="prodPrice" class="form-label text-white-50 small">PRECIO
-                                            (Texto)</label>
-                                        <input type="text" class="form-control bg-dark text-white border-secondary"
-                                            id="prodPrice" value="Consultar" required>
+                                        <label class="form-label text-white-50 small">PRECIO</label>
+                                        <div class="d-flex gap-3 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="priceMode"
+                                                    id="modeConsultar" value="consultar" checked
+                                                    onchange="togglePriceInput()">
+                                                <label class="form-check-label text-white"
+                                                    for="modeConsultar">Consultar</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="priceMode"
+                                                    id="modeMonto" value="monto" onchange="togglePriceInput()">
+                                                <label class="form-check-label text-white" for="modeMonto">Monto
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <input type="number" class="form-control bg-dark text-white border-secondary"
+                                            id="prodPrice" placeholder="Ej: 150000" style="display: none;" min="1">
                                     </div>
                                     <div class="mb-3">
                                         <label for="prodDesc" class="form-label text-white-50 small">DESCRIPCIÓN</label>
                                         <textarea class="form-control bg-dark text-white border-secondary" id="prodDesc"
-                                            rows="2" required></textarea>
+                                            rows="2" maxlength="200" required></textarea>
                                     </div>
                                     <div class="mb-3">
                                         <label for="prodBadge" class="form-label text-white-50 small">ETIQUETA
@@ -740,6 +754,40 @@
         const API_CHANGE_PASS_URL = 'http://localhost:3000/api/change-password';
         const API_SALES_URL = 'http://localhost:3000/api/sales';
 
+        // --- Auth Helper ---
+        // --- Auth Helper & Wrapper ---
+        function getAuthHeaders() {
+            const token = localStorage.getItem('adminToken');
+            return {
+                'Authorization': `Bearer ${token}`
+            };
+        }
+
+        async function authFetch(url, options = {}) {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                alert("No hay sesión activa. Por favor ingresa nuevamente.");
+                logout();
+                throw new Error("No token");
+            }
+
+            // Merge headers
+            options.headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`
+            };
+
+            const res = await fetch(url, options);
+
+            if (res.status === 401 || res.status === 403) {
+                alert("Tu sesión ha expirado o no tienes permisos.");
+                logout();
+                throw new Error("Unauthorized");
+            }
+
+            return res;
+        }
+
         let productsChartInstance = null;
         let trafficChartInstance = null;
         let salesGrowthChartInstance = null;
@@ -759,24 +807,46 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password: pass })
                 });
+
                 const data = await res.json();
 
                 if (data.success) {
+                    // Critical: Save Token FIRST
+                    localStorage.setItem('adminToken', data.token);
+                    localStorage.setItem('adminLoggedIn', 'true');
+
                     const loginSection = document.getElementById('loginSection');
                     loginSection.style.display = 'none';
                     loginSection.classList.remove('d-flex');
-
                     document.getElementById('dashboardSection').style.display = 'flex';
-                    localStorage.setItem('adminLoggedIn', 'true');
+
                     loadStats();
                     loadPreferences();
                 } else {
                     showLoginError();
                 }
             } catch (err) {
+                console.error(err);
                 alert('Error conectando con el servidor.');
             }
         });
+
+        // Debug Tool (Hidden by default, can be enabled in console or code)
+        function debugToken() {
+            const token = localStorage.getItem('adminToken');
+            if (token) {
+                // Decode payload (Base64Url decode)
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const exp = new Date(payload.exp * 1000);
+                    alert(`Token Activo:\nExpira: ${exp.toLocaleString()}\nPayload: ${JSON.stringify(payload)}`);
+                } catch (e) {
+                    alert('Token existe pero es inválido/ilegible.');
+                }
+            } else {
+                alert('NO hay token guardado (null).');
+            }
+        }
 
         function showLoginError() {
             const errorMsg = document.getElementById('loginError');
@@ -794,7 +864,20 @@
             overlay.classList.toggle('active');
         }
 
-        // --- SECTION NAVIGATION ---
+        // Toggle Price Input Visibility
+        function togglePriceInput() {
+            const isMonto = document.getElementById('modeMonto').checked;
+            const priceInput = document.getElementById('prodPrice');
+            if (isMonto) {
+                priceInput.style.display = 'block';
+                priceInput.required = true;
+            } else {
+                priceInput.style.display = 'none';
+                priceInput.required = false;
+                priceInput.value = '';
+            }
+        }
+
         function showSection(sectionId) {
             // Hide all sections
             document.getElementById('section-resumen').style.display = 'none';
@@ -933,6 +1016,13 @@
             const selectVal = document.getElementById('saleProduct').value;
             const customVal = document.getElementById('customProduct').value;
 
+            // Determine correct product name
+            if (category === 'otros' || selectVal === 'Otro') {
+                product = customVal;
+            } else {
+                product = selectVal;
+            }
+
             if (!product) {
                 alert("Por favor ingrese el nombre del producto.");
                 return;
@@ -950,7 +1040,7 @@
                     method = 'PUT';
                 }
 
-                const res = await fetch(url, {
+                const res = await authFetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ date, product: finalProduct, amount })
@@ -984,12 +1074,17 @@
 
         async function loadSales() {
             try {
-                const res = await fetch(API_SALES_URL);
+                const res = await authFetch(API_SALES_URL);
                 const sales = await res.json();
                 globalSales = sales; // Almacenar para filtrar el gráfico
 
-                // Ordenar del más reciente al más antiguo
-                sales.sort((a, b) => new Date(b.date) - new Date(a.date));
+                // Ordenar del más reciente al más antiguo (Fecha Venta -> Fecha Creación/ID)
+                sales.sort((a, b) => {
+                    const dateDiff = new Date(b.date) - new Date(a.date);
+                    if (dateDiff !== 0) return dateDiff;
+                    // Si es la misma fecha, mostrar el más nuevo primero (por ID/Timestamp)
+                    return b.id.localeCompare(a.id);
+                });
 
                 // 1. Calcular Ingresos Totales
                 const totalRevenue = sales.reduce((sum, sale) => sum + parseInt(sale.amount || 0), 0);
@@ -1024,7 +1119,10 @@
         async function deleteSale(id) {
             if (!confirm("¿Seguro que deseas eliminar esta venta?")) return;
             try {
-                const res = await fetch(API_SALES_URL + '/' + id, { method: 'DELETE' });
+                const res = await authFetch(API_SALES_URL + '/' + id, {
+                    method: 'DELETE'
+                });
+
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Error al eliminar');
                 loadSales();
@@ -1338,7 +1436,7 @@
             const newPass = document.getElementById('newPass').value;
 
             try {
-                const res = await fetch(API_CHANGE_PASS_URL, {
+                const res = await authFetch(API_CHANGE_PASS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass })
@@ -1434,25 +1532,28 @@
         });
 
         function editProduct(id) {
-            const p = globalProducts.find(product => product.id === id);
-            if (!p) return;
+            const product = globalProducts.find(p => p.id === id);
+            if (!product) return;
 
             editingProductId = id;
-
-            // Populate Form
-            document.getElementById('prodName').value = p.name;
-            document.getElementById('prodType').value = p.type;
-            document.getElementById('prodPrice').value = p.price;
-            document.getElementById('prodDesc').value = p.description;
-            // Handle Badge dropdown - if value doesn't exist in options, it might default to empty, 
-            // but our current options are limited. If p.badge is unique, we might need to add it or just set value.
-            document.getElementById('prodBadge').value = p.badge || "";
-
-            // No requerido en edición
-            document.getElementById('prodImage').required = false; // Not required on edit
-
-            // Permitir al usuario salir del modo de edición
             document.getElementById('formTitle').innerHTML = `<i class="bi bi-pencil-square me-2"></i> Editando Producto <button onclick="cancelProductEdit()" class="btn btn-sm btn-outline-secondary float-end">Cancelar</button>`;
+            document.getElementById('prodName').value = product.name;
+            document.getElementById('prodType').value = product.type;
+            document.getElementById('prodDesc').value = product.description;
+            document.getElementById('prodBadge').value = product.badge;
+
+            // Handle Price Mode
+            if (product.priceMode === 'monto' || (typeof product.price === 'number')) {
+                document.getElementById('modeMonto').checked = true;
+                document.getElementById('prodPrice').value = product.price;
+            } else {
+                document.getElementById('modeConsultar').checked = true;
+            }
+            togglePriceInput(); // Update UI
+
+            document.getElementById('prodImage').required = false; // Image optional on edit
+            document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+
             const submitBtn = document.querySelector('#productForm button[type="submit"]');
             submitBtn.textContent = "Actualizar Producto";
             submitBtn.classList.remove('btn-warning');
@@ -1477,10 +1578,20 @@
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const priceMode = document.querySelector('input[name="priceMode"]:checked').value;
+            const priceVal = document.getElementById('prodPrice').value;
+
             const formData = new FormData();
             formData.append('name', document.getElementById('prodName').value);
             formData.append('type', document.getElementById('prodType').value);
-            formData.append('price', document.getElementById('prodPrice').value);
+            formData.append('priceMode', priceMode);
+
+            if (priceMode === 'monto') {
+                formData.append('price', priceVal);
+            } else {
+                formData.append('price', 'Consultar');
+            }
+
             formData.append('description', document.getElementById('prodDesc').value);
             formData.append('badge', document.getElementById('prodBadge').value);
 
@@ -1501,7 +1612,9 @@
                     method = 'PUT';
                 }
 
-                const res = await fetch(url, {
+                // authFetch handles Authorization header. 
+                // Do NOT set Content-Type manually for FormData.
+                const res = await authFetch(url, {
                     method: method,
                     body: formData
                 });
@@ -1524,7 +1637,10 @@
             if (!confirm('¿Seguro que deseas eliminar este producto?')) return;
 
             try {
-                const res = await fetch(`http://localhost:3000/api/products/${id}`, { method: 'DELETE' });
+                const res = await authFetch(`http://localhost:3000/api/products/${id}`, {
+                    method: 'DELETE'
+                });
+
                 const data = await res.json();
 
                 if (data.success) {
@@ -1539,7 +1655,11 @@
 
 
         // Inicialización global
-        if (localStorage.getItem('adminLoggedIn') === 'true') {
+        // Inicialización global
+        const storedToken = localStorage.getItem('adminToken');
+        const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+
+        if (isLoggedIn && storedToken) {
             document.getElementById('loginSection').style.display = 'none';
             document.getElementById('loginSection').classList.remove('d-flex');
             document.getElementById('dashboardSection').style.display = 'flex';
@@ -1551,12 +1671,16 @@
             showSection(lastSection);
 
             if (lastSection === 'productos-admin') loadProductsAdmin();
+        } else {
+            // Force clean state if inconsistent
+            if (isLoggedIn) logout();
         }
 
 
 
         function logout() {
             localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminToken');
             location.reload();
         }
 

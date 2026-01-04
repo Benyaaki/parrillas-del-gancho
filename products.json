@@ -15,7 +15,8 @@
     "price": "Consultar",
     "description": "Incluye motor eléctrico y espiedo. Solución completa en espacio reducido.",
     "badge": "Más vendido",
-    "image": "img/parrilla4.jpg"
+    "image": "img/parrilla4.jpg",
+    "priceMode": "consultar"
   },
   {
     "id": "3",
@@ -111,6 +112,8 @@
     "type": "articulo",
     "price": "Consultar",
     "description": "Adaptable a cualquier parrilla. Acero inoxidable y motor silencioso.",
-    "image": "img/spiedo.png"
+    "image": "img/spiedo.png",
+    "priceMode": "consultar",
+    "badge": "Más vendido"
   }
 ]
